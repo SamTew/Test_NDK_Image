@@ -26,7 +26,7 @@ import org.opencv.imgproc.Imgproc;
 
 import java.io.File;
 
-public class MainActivity extends Activity implements CameraBridgeViewBase.CvCameraViewListener{
+public class MainActivity extends Activity implements CameraBridgeViewBase.CvCameraViewListener2 {
 
     private static final String    TAG = "OCVSample::Activity";
 
@@ -35,7 +35,11 @@ public class MainActivity extends Activity implements CameraBridgeViewBase.CvCam
 //    private static final int       VIEW_MODE_CANNY    = 2;
     private static final int       VIEW_MODE_FEATURES = 5;
     private static final int       VIEW_MODE_TPLMATCH = 6;
-
+    int startX = 0, endX = 0, startY = 0, endY = 0;
+    Point start_point, end_point;
+    Scalar border_colour = new Scalar(255, 0, 0, 0);
+    Rect roi_rect = new Rect();
+    String filename = null;
     private int                    mViewMode;
     private Mat                    mRgba;
 //    private Mat                    mIntermediateMat;
@@ -46,20 +50,9 @@ public class MainActivity extends Activity implements CameraBridgeViewBase.CvCam
 //    private MenuItem               mItemPreviewGray;
 //    private MenuItem               mItemPreviewCanny;
     private MenuItem               mItemPreviewFeatures;
-
     private CameraBridgeViewBase mOpenCvCameraView;
-
     private MenuItem mSaveTemplate;
     private MenuItem mTracking;
-
-    int startX = 0, endX = 0, startY = 0, endY = 0;
-    Point start_point, end_point;
-    Scalar border_colour = new Scalar(255,0,0,0);
-    Rect roi_rect = new Rect();
-
-
-    String filename = null;
-
     private BaseLoaderCallback mLoaderCallback = new BaseLoaderCallback(this) {
         @Override
         public void onManagerConnected(int status) {
@@ -163,6 +156,8 @@ public class MainActivity extends Activity implements CameraBridgeViewBase.CvCam
         mRgba = new Mat(height, width, CvType.CV_8UC4);
 //        mIntermediateMat = new Mat(height, width, CvType.CV_8UC4);
         mGrayMat = new Mat(height, width, CvType.CV_8UC1);
+        mytemplate = new Mat(CvType.CV_8UC4);
+
     }
 
     @Override
@@ -173,8 +168,8 @@ public class MainActivity extends Activity implements CameraBridgeViewBase.CvCam
     }
 
     @Override
-    public Mat onCameraFrame(Mat inputFrame) {
-        mRgba=inputFrame;
+    public Mat onCameraFrame(CameraBridgeViewBase.CvCameraViewFrame inputFrame) {
+        mRgba = inputFrame.rgba();
         final int viewMode = mViewMode;
         if (startX!=0 && endX!=0 && mViewMode!=VIEW_MODE_TPLMATCH) {
             Core.rectangle(mRgba, start_point, end_point, border_colour, 0, 0, 0);
@@ -205,7 +200,7 @@ public class MainActivity extends Activity implements CameraBridgeViewBase.CvCam
                 break;
             case VIEW_MODE_TPLMATCH:
                 getPath();
-                mytemplate = Highgui.imread(filename, Highgui.CV_LOAD_IMAGE_UNCHANGED);
+                mytemplate = Highgui.imread(filename, Highgui.CV_LOAD_IMAGE_COLOR);
                 int result_cols =  mRgba.cols() - mytemplate.cols() + 1;
                 int result_rows = mRgba.rows() - mytemplate.rows() + 1;
 
